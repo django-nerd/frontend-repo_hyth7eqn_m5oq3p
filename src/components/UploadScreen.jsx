@@ -1,7 +1,17 @@
+import { useState } from 'react'
 import NavBar from './NavBar'
 import PillButton from './PillButton'
 
-export default function UploadScreen({ onChoose, onTake }) {
+export default function UploadScreen({ onChoose, onTake, imageUrl, onImageUrlChange, onAnalyzeFromUrl, analyzing, error }) {
+  const [localUrl, setLocalUrl] = useState(imageUrl || '')
+
+  const submitUrl = (e) => {
+    e?.preventDefault()
+    if (!localUrl) return
+    onImageUrlChange?.(localUrl)
+    onAnalyzeFromUrl?.()
+  }
+
   return (
     <div className="min-h-screen bg-white text-black">
       <NavBar title="Add Photo" onBack={() => {}} />
@@ -18,6 +28,27 @@ export default function UploadScreen({ onChoose, onTake }) {
         <p className="text-[14px] text-[#6E6E6E] mt-4">
           Take or select a photo of your vintage item to find similar pieces
         </p>
+
+        <form onSubmit={submitUrl} className="mt-8">
+          <label className="block text-[14px] text-[#6E6E6E] mb-2">Or paste a link</label>
+          <div className="flex items-stretch gap-2">
+            <input
+              type="url"
+              inputMode="url"
+              placeholder="Paste an image or product page link"
+              value={localUrl}
+              onChange={(e) => { setLocalUrl(e.target.value); onImageUrlChange?.(e.target.value) }}
+              className="flex-1 h-[54px] px-4 rounded-[14px] border border-[#E5E5E5] bg-white text-[15px] placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-black/10"
+            />
+            <button
+              type="submit"
+              disabled={!localUrl || analyzing}
+              className="h-[54px] px-4 rounded-[14px] bg-black text-white font-semibold disabled:opacity-50"
+            >{analyzing ? 'Searching…' : 'Search'}</button>
+          </div>
+          {error && <div className="text-[13px] text-red-600 mt-2">{error}</div>}
+          <p className="text-[13px] text-[#6E6E6E] mt-2">We can also use the main image from a product page to search for similar items.</p>
+        </form>
       </div>
     </div>
   )
