@@ -19,6 +19,12 @@ function useLocalStorage(key, initial) {
   return [value, setValue]
 }
 
+function formatPrice(p) {
+  if (!p || (p.value == null && !p.currency)) return null
+  const val = p.value != null ? new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 }).format(p.value) : null
+  return [p.currency, val].filter(Boolean).join(' ')
+}
+
 export default function UploadAndSearch() {
   const [file, setFile] = useState(null)
   const [imageUrl, setImageUrl] = useState('')
@@ -84,7 +90,17 @@ export default function UploadAndSearch() {
   }
 
   const saveItem = (item) => {
-    const entry = { ...item, savedAt: Date.now() }
+    // Normalize saved structure
+    const normalized = {
+      source: item.source,
+      title: item.title,
+      url: item.url,
+      image: item.image || item.thumbnail || null,
+      price: item.price || null,
+      location: item.location || '',
+      relevanceScore: item.relevanceScore ?? 0,
+    }
+    const entry = { ...normalized, savedAt: Date.now() }
     setSaved((prev) => {
       const exists = prev.some((p) => p.url === entry.url)
       if (exists) return prev
@@ -188,11 +204,12 @@ export default function UploadAndSearch() {
                     <div key={idx} className="p-3 rounded-lg bg-slate-900/50 border border-slate-700/50">
                       <a href={item.url} target="_blank" rel="noreferrer" className="block">
                         <div className="flex gap-3">
-                          {item.thumbnail && <img src={item.thumbnail} alt="thumb" className="w-16 h-16 object-cover rounded" />}
-                          <div className="flex-1">
+                          {(item.image || item.thumbnail) && <img src={item.image || item.thumbnail} alt="thumb" className="w-16 h-16 object-cover rounded" />}
+                          <div className="flex-1 min-w-0">
                             <p className="text-blue-100 text-sm font-medium line-clamp-2">{item.title}</p>
-                            {item.snippet && <p className="text-blue-300/70 text-xs mt-1 line-clamp-2">{item.snippet}</p>}
-                            {item.price && <p className="text-green-300 text-xs mt-1">{item.price}</p>}
+                            {item.location && <p className="text-blue-300/70 text-xs mt-1 line-clamp-1">{item.location}</p>}
+                            {item.relevanceScore != null && <p className="text-blue-300/70 text-[11px] mt-1">Relevance: {item.relevanceScore}</p>}
+                            {formatPrice(item.price) && <p className="text-green-300 text-xs mt-1">{formatPrice(item.price)}</p>}
                           </div>
                         </div>
                       </a>
@@ -224,11 +241,11 @@ export default function UploadAndSearch() {
             {saved.map((s, i) => (
               <a key={i} href={s.url} target="_blank" rel="noreferrer" className="block p-3 rounded-lg bg-slate-900/50 hover:bg-slate-900/70 transition border border-slate-700/50">
                 <div className="flex gap-3">
-                  {s.thumbnail && <img src={s.thumbnail} alt="thumb" className="w-16 h-16 object-cover rounded" />}
+                  {(s.image || s.thumbnail) && <img src={s.image || s.thumbnail} alt="thumb" className="w-16 h-16 object-cover rounded" />}
                   <div className="min-w-0">
                     <div className="text-xs text-blue-300/60">{new Date(s.savedAt).toLocaleString()}</div>
                     <div className="text-blue-100 text-sm font-medium line-clamp-2">{s.title || s.url}</div>
-                    {s.price && <div className="text-green-300 text-xs mt-1">{s.price}</div>}
+                    {formatPrice(s.price) && <div className="text-green-300 text-xs mt-1">{formatPrice(s.price)}</div>}
                   </div>
                 </div>
               </a>
