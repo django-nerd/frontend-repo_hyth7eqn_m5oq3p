@@ -1,27 +1,40 @@
-import UploadAndSearch from './components/UploadAndSearch'
+import { useRef, useState } from 'react'
+import UploadScreen from './components/UploadScreen'
+import MarketplacePage from './components/MarketplacePage'
+import SimilarItemsPage from './components/SimilarItemsPage'
 
 function App() {
+  const [screen, setScreen] = useState('upload') // upload | market | similar
+  const fileRef = useRef(null)
+
+  const onChoose = () => fileRef.current?.click()
+  const onTake = () => alert('Camera access is not available in this preview. Use Choose from Library.')
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(59,130,246,0.05),transparent_50%)]" />
-
-      <div className="relative min-h-screen flex items-start justify-center p-8">
-        <div className="max-w-5xl w-full">
-          <div className="text-center mb-10">
-            <div className="inline-flex items-center justify-center mb-4">
-              <img src="/flame-icon.svg" alt="Flames" className="w-14 h-14 drop-shadow-[0_0_25px_rgba(59,130,246,0.5)]" />
-            </div>
-            <h1 className="text-4xl font-bold text-white mb-2 tracking-tight">Vintage Finds</h1>
-            <p className="text-lg text-blue-200">Identify designer pieces and find live listings across Auctionet, 1stDibs, and Pamono.</p>
-          </div>
-
-          <UploadAndSearch />
-
-          <div className="text-center mt-14">
-            <p className="text-sm text-blue-300/60">Two-stage AI identification using Google Vision and GPT-4o Vision</p>
+    <div className="min-h-screen bg-white">
+      <div className="sticky top-0 z-30 bg-white border-b border-[#E5E5E5]">
+        <div className="max-w-6xl mx-auto px-5 py-3 flex items-center gap-2">
+          <div className="text-[22px] md:text-[24px] font-bold">Vintage Finds</div>
+          <div className="flex-1" />
+          <div className="flex items-center gap-2">
+            <button onClick={() => setScreen('upload')} className={`px-3 py-2 rounded-full text-[14px] ${screen==='upload'?'bg-black text-white':'hover:bg-black/5'}`}>Add Photo</button>
+            <button onClick={() => setScreen('market')} className={`px-3 py-2 rounded-full text-[14px] ${screen==='market'?'bg-black text-white':'hover:bg-black/5'}`}>Marketplace</button>
+            <button onClick={() => setScreen('similar')} className={`px-3 py-2 rounded-full text-[14px] ${screen==='similar'?'bg-black text-white':'hover:bg-black/5'}`}>Similar Items</button>
           </div>
         </div>
       </div>
+
+      <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={() => {}} />
+
+      {screen === 'upload' && (
+        <UploadScreen onChoose={onChoose} onTake={onTake} />
+      )}
+      {screen === 'market' && (
+        <MarketplacePage />
+      )}
+      {screen === 'similar' && (
+        <SimilarItemsPage />
+      )}
     </div>
   )
 }
